@@ -1,8 +1,7 @@
-<<<<<<< HEAD
-Picture Renamer Application
+Conquest Field Photos Application
 Overview
 
-The Picture Renamer application allows users to upload photos corresponding to a list of custom photo names. Users can enter a list of names, upload multiple photos for each name, and download the renamed photos in a ZIP file. The app is designed to be flexible, allowing users to skip uploading photos for certain names while still generating the ZIP file with a warning about any missing files.
+The Conquest Field Photos Application allows users to upload photos corresponding to a list of custom photo names. Users can enter a list of names, upload multiple photos for each name, and download the renamed photos in a ZIP file. The app is designed to be flexible, allowing users to skip uploading photos for certain names while still generating the ZIP file with a warning about any missing files.
 Features
 
     Custom Photo Names Input: Users can input a list of photo names, one per line.
