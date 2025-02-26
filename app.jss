@@ -15,6 +15,7 @@ function generatePhotoUploadForm(names) {
   names.forEach((name) => {
     const div = document.createElement('div');
     div.classList.add('photo-group');
+    div.setAttribute('data-name', name.trim()); // Add data-name for easier identification
     div.innerHTML = `
       <label>${name}</label>
       <div class="file-inputs">
@@ -72,25 +73,21 @@ function handleFileSelect(event) {
   }
 }
 
-// Handle processing of the uploaded photos
-document.getElementById('process-button').addEventListener('click', async () => {
-  const photoGroups = document.querySelectorAll('.photo-group');
+// Function to generate ZIP file (moved out for reuse)
+function generateZip(photoGroups) {
   const zip = new JSZip();
-  let missingPhotos = []; // To store names with missing photos
-  let filesAdded = false; // To check if at least one file has been uploaded
+  let filesAdded = false;
 
   for (const group of photoGroups) {
     const name = group.querySelector('label').textContent.trim();
     const inputs = group.querySelectorAll('input[type="file"]');
     let fileIndex = 1;
-    let filesSelected = false;
 
     for (const input of inputs) {
       const file = input.files[0];
       if (file) {
-        filesSelected = true;
-        filesAdded = true; // At least one file has been uploaded
-        const data = await file.arrayBuffer();
+        filesAdded = true;
+        const data = file.arrayBuffer(); // Note: This returns a Promise, handled below
         const extension = file.name.split('.').pop();
         let fileName = `${name}.${extension}`;
 
@@ -102,25 +99,81 @@ document.getElementById('process-button').addEventListener('click', async () => 
         fileIndex++;
       }
     }
+  }
+
+  return { zip, filesAdded };
+}
+
+// Handle processing of the uploaded photos
+document.getElementById('process-button').addEventListener('click', async () => {
+  const photoGroups = document.querySelectorAll('.photo-group');
+  let missingPhotos = []; // To store names with missing photos
+
+  // Reset any previous "missing" highlights
+  photoGroups.forEach(group => group.classList.remove('missing'));
+
+  // Check for missing photos
+  for (const group of photoGroups) {
+    const name = group.querySelector('label').textContent.trim();
+    const inputs = group.querySelectorAll('input[type="file"]');
+    let filesSelected = false;
+
+    for (const input of inputs) {
+      if (input.files[0]) {
+        filesSelected = true;
+        break;
+      }
+    }
 
     if (!filesSelected) {
-      // If no files are selected for this photo name, add it to the missingPhotos array
       missingPhotos.push(name);
     }
   }
 
   if (missingPhotos.length > 0) {
-    // Display a warning message about the missing photos
-    alert(`Warning: No files were uploaded for the following names:\n\n${missingPhotos.join('\n')}`);
-  }
+    // Create a custom popup instead of alert for better control
+    const popup = document.createElement('div');
+    popup.classList.add('popup');
+    popup.innerHTML = `
+      <div class="popup-content">
+        <p>Warning: No files were uploaded for the following names:</p>
+        <ul>${missingPhotos.map(name => `<li>${name}</li>`).join('')}</ul>
+        <button id="add-missing-btn">Add Missing Photos</button>
+        <button id="download-anyway-btn">Download Anyway</button>
+      </div>
+    `;
+    document.body.appendChild(popup);
 
-  if (filesAdded) {
-    // Only generate the ZIP file if at least one file has been uploaded
-    zip.generateAsync({ type: 'blob' }).then((content) => {
-      saveAs(content, 'renamed-photos.zip');
+    // Add event listeners for popup buttons
+    document.getElementById('add-missing-btn').addEventListener('click', () => {
+      document.body.removeChild(popup);
+      // Highlight missing photo groups in red
+      photoGroups.forEach(group => {
+        const name = group.getAttribute('data-name');
+        if (missingPhotos.includes(name)) {
+          group.classList.add('missing');
+        }
+      });
+    });
+
+    document.getElementById('download-anyway-btn').addEventListener('click', async () => {
+      document.body.removeChild(popup);
+      const { zip, filesAdded } = generateZip(photoGroups);
+      if (filesAdded) {
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, 'renamed-photos.zip');
+      } else {
+        alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+      }
     });
   } else {
-    // If no files were uploaded at all, display an error
-    alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+    // No missing photos, proceed directly to download
+    const { zip, filesAdded } = generateZip(photoGroups);
+    if (filesAdded) {
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, 'renamed-photos.zip');
+    } else {
+      alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+    }
   }
 });
