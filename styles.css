@@ -40,31 +40,16 @@ header h1 {
   margin-bottom: 10px;
 }
 
-/* Drag-and-Drop Zone */
-.drop-zone {
-  border: 2px dashed #ccc;
-  padding: 40px;
-  text-align: center;
-  background-color: #fff;
-  margin-bottom: 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: border-color 0.3s, background-color 0.3s;
-}
-
-.drop-zone:hover, .drop-zone:active {
-  border-color: #1E90FF;
-  background-color: #f0f8ff;
-}
-
-.drop-zone.dragover {
-  border-color: #1E90FF;
-  background-color: #e6f3ff;
-}
-
-/* File Input Styling (Hidden but accessible) */
+/* File Input Styling */
 #fileInput {
-  display: none;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 /* Image Previews */
@@ -104,6 +89,11 @@ button {
 
 button:hover, button:active {
   background-color: #4169E1;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 /* Form Inputs */
@@ -168,10 +158,8 @@ input[type="text"], textarea {
     font-size: 1.5rem;
   }
 
-  .drop-zone {
-    width: 90%;
-    margin: 10px auto;
-    padding: 20px;
+  #fileInput {
+    font-size: 0.9rem;
   }
 
   .image-preview {
@@ -205,6 +193,6 @@ input[type="text"], textarea {
 }
 
 /* Ensure touch-friendly elements */
-button, .drop-zone {
+button, #fileInput {
   touch-action: manipulation;
 }
