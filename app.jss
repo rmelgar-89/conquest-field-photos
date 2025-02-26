@@ -87,6 +87,7 @@ processButton.addEventListener('click', () => {
   displayPhotoUploads();
   page1.style.display = 'none';
   page2.style.display = 'block';
+  window.scrollTo(0, 0); // Scroll to top of Page 2
 });
 
 // Display Photo Uploads
