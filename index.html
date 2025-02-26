@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Added for mobile responsiveness -->
   <title>Picture Renamer</title>
   <!-- Bootstrap CSS -->
   <link
@@ -25,6 +26,7 @@
             class="form-control"
             placeholder="Enter photo names, one per line"
             rows="10"
+            required <!-- Added for basic validation -->
           ></textarea>
         </div>
         <button type="submit" class="btn btn-primary w-100">Next</button>
@@ -34,8 +36,8 @@
     <!-- Photo Upload Section -->
     <div id="photo-upload-section" style="display: none;">
       <h2>Upload Photos</h2>
-      <form id="photo-upload-form"></form>
-      <button id="process-button" class="btn btn-success w-100 mt-3">
+      <form id="photo-upload-form" class="mb-3"></form>
+      <button id="process-button" class="btn btn-success w-100">
         Process
       </button>
     </div>
