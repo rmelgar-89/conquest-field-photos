@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Conquest Field Photos</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192x192.png">
 </head>
 <body>
   <header>
@@ -12,11 +16,34 @@
     <h1>Photo Renaming Tool</h1>
   </header>
   <div class="container">
-    <input type="file" id="fileInput" multiple>
-    <div id="imagePreviews"></div>
-    <button id="renameButton">Rename Files</button>
-    <button id="downloadZip" style="display: none;">Download ZIP</button>
+    <div id="photo-names-section">
+      <div class="checklist">
+        <h3>Required Photos</h3>
+        <form id="photo-names-form">
+          <textarea id="photo-names" placeholder="Paste photo names here (e.g., MS_BR026_1_MDF_Room_Door), one per line"></textarea>
+          <button type="submit">Process</button>
+        </form>
+      </div>
+      <div class="upload-options">
+        <label><input type="radio" name="uploadDestination" value="local" checked> Download as ZIP</label>
+        <label><input type="radio" name="uploadDestination" value="google"> Upload to Google Drive (Coming Soon)</label>
+        <label><input type="radio" name="uploadDestination" value="ftp"> Upload to FTP (Coming Soon)</label>
+      </div>
+      <button id="uploadToDrive" style="display: none;" disabled>Upload to Google Drive (Coming Soon)</button>
+      <button id="uploadToFtp" style="display: none;" disabled>Upload to FTP (Coming Soon)</button>
+    </div>
+
+    <div id="photo-upload-section" style="display: none;">
+      <div id="photo-upload-form"></div>
+      <button id="process-button">Download as ZIP</button>
+      <ul id="photoChecklist"></ul>
+    </div>
   </div>
-  <script src="app.jss"></script>
+
+  <script type="module" src="/capacitor.js"></script>
+  <script nomodule src="/capacitor.js"></script>
+  <script type="module" src="app.jss"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </body>
 </html>
