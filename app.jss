@@ -63,82 +63,87 @@ loadQueue();
 
 // DOM Ready Event to Ensure Elements Exist
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM fully loaded');
-
-  // Page Navigation and State
-  const page1 = document.getElementById('page1');
-  const page2 = document.getElementById('page2');
-  const photoListInput = document.getElementById('photoList');
-  const processButton = document.getElementById('processButton');
-  const photoUploads = document.getElementById('photoUploads');
-  const addAdditionalPhotoButton = document.getElementById('addAdditionalPhoto');
-  const downloadZipButton = document.getElementById('downloadZip');
+  const photoNamesSection = document.getElementById('photo-names-section');
+  const photoUploadSection = document.getElementById('photo-upload-section');
+  const photoNamesForm = document.getElementById('photo-names-form');
+  const photoUploadForm = document.getElementById('photo-upload-form');
+  const processButton = document.getElementById('process-button');
   const photoChecklist = document.getElementById('photoChecklist');
   const uploadOptions = document.querySelectorAll('input[name="uploadDestination"]');
 
-  let photoNames = [];
   let uploadedFiles = {};
 
-  // Process Photo Names
-  processButton.addEventListener('click', () => {
-    console.log('Process button clicked');
-    const names = photoListInput.value.split('\n').map(line => line.trim()).filter(line => line);
-    if (names.length === 0) {
-      alert('Please enter at least one photo name.');
-      return;
-    }
-    photoNames = names;
-    displayPhotoUploads();
-    page1.style.display = 'none';
-    page2.style.display = 'block';
-    window.scrollTo(0, 0); // Scroll to top of Page 2
+  // Listen for submission of the photo names form
+  photoNamesForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const names = document.getElementById('photo-names').value.split('\n').filter(Boolean);
+    generatePhotoUploadForm(names);
   });
 
-  // Display Photo Uploads
-  function displayPhotoUploads() {
-    photoUploads.innerHTML = '';
-    const nameCount = {};
-
-    photoNames.forEach((name, index) => {
-      nameCount[name] = (nameCount[name] || 0) + 1;
-      const version = nameCount[name] > 1 ? `_${nameCount[name]}` : '';
-      const fullName = `${name}${version}`;
-
+  // Generate the photo upload form based on the provided photo names
+  function generatePhotoUploadForm(names) {
+    photoUploadForm.innerHTML = ''; // Clear existing content
+    names.forEach((name) => {
       const div = document.createElement('div');
-      div.className = 'upload-item';
+      div.classList.add('photo-group');
       div.innerHTML = `
-        <span>${fullName}</span>
-        <input type="file" class="fileInput" data-name="${fullName}" accept="image/*">
+        <label>${name.trim()}</label>
+        <div class="file-inputs">
+          <div class="file-input">
+            <input type="file" accept="image/*" data-name="${name.trim()}" />
+          </div>
+        </div>
+        <button type="button" class="add-photo-btn" data-name="${name.trim()}">Add Photo</button>
       `;
-      photoUploads.appendChild(div);
+      photoUploadForm.appendChild(div);
     });
-
-    // Add event listeners for file inputs
-    document.querySelectorAll('.fileInput').forEach(input => {
-      input.addEventListener('change', (e) => handleFileUpload(e.target));
-    });
+    photoNamesSection.style.display = 'none';
+    photoUploadSection.style.display = 'block';
+    window.scrollTo(0, 0); // Scroll to top of upload section
+    updateChecklist(); // Initialize checklist on page load
   }
 
-  // Add Additional Photo
-  addAdditionalPhotoButton.addEventListener('click', () => {
-    if (photoNames.length === 0) {
-      alert('Please process photo names first.');
-      return;
+  // Handle adding additional photo inputs for each name
+  photoUploadForm.addEventListener('click', (event) => {
+    if (event.target && event.target.classList.contains('add-photo-btn')) {
+      const name = event.target.getAttribute('data-name');
+      const photoGroup = event.target.parentNode;
+      const fileInputsDiv = photoGroup.querySelector('.file-inputs');
+
+      const newFileInputDiv = document.createElement('div');
+      newFileInputDiv.classList.add('file-input');
+      newFileInputDiv.innerHTML = `
+        <input type="file" accept="image/*" data-name="${name.trim()}" />
+      `;
+      fileInputsDiv.appendChild(newFileInputDiv);
     }
-    const lastName = photoNames[photoNames.length - 1];
-    const nameCount = photoNames.filter(name => name === lastName).length + 1;
-    const version = nameCount > 1 ? `_${nameCount}` : '';
-    const newName = `${lastName}${version}`;
-    photoNames.push(lastName); // Add the base name for counting
-    displayPhotoUploads();
   });
 
-  // Handle File Upload
-  async function handleFileUpload(input) {
-    const file = input.files[0];
-    const name = input.dataset.name;
+  // Handle image previews and uploads when a file is selected
+  photoUploadForm.addEventListener('change', (event) => {
+    if (event.target && event.target.matches('input[type="file"]')) {
+      handleFileSelect(event);
+    }
+  });
+
+  async function handleFileSelect(event) {
+    const file = event.target.files[0];
+    const name = event.target.dataset.name;
 
     if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        let img = event.target.parentNode.querySelector('img');
+        if (!img) {
+          img = document.createElement('img');
+          img.style.maxWidth = '100px';
+          img.style.display = 'block';
+          event.target.parentNode.appendChild(img);
+        }
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
       let fileData;
       if (Capacitor.isNative) {
         fileData = await Filesystem.readFile({
@@ -160,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
         if (data.success) {
           uploadedFiles[name] = data.filename;
-          input.disabled = true; // Prevent re-uploading
+          event.target.disabled = true; // Prevent re-uploading
           updateChecklist();
         } else {
           alert('Error uploading file: ' + data.error);
@@ -175,11 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Photo Checklist with Interactive Popup
   function updateChecklist() {
-    const requiredNames = photoNames.map(name => {
-      const counts = {};
-      photoNames.forEach(n => counts[n] = (counts[n] || 0) + 1);
-      return Array.from({ length: counts[name] }, (_, i) => `${name}${i > 0 ? `_${i + 1}` : ''}`);
-    }).flat();
+    const photoGroups = document.querySelectorAll('.photo-group');
+    const requiredNames = Array.from(photoGroups).map(group => group.querySelector('label').textContent.trim());
     photoChecklist.innerHTML = '';
 
     let hasMissing = false;
@@ -199,9 +201,58 @@ document.addEventListener('DOMContentLoaded', () => {
     window.missingPhotos = hasMissing ? requiredNames.filter(name => !uploadedFiles[name]) : [];
   }
 
-  downloadZipButton.addEventListener('click', () => {
-    if (window.missingPhotos && window.missingPhotos.length > 0) {
-      const confirmProceed = confirm(`The following photos are missing: ${window.missingPhotos.join(', ')}\nProceed anyway or go back to fix?`);
+  // Handle processing of the uploaded photos
+  processButton.addEventListener('click', async () => {
+    const photoGroups = document.querySelectorAll('.photo-group');
+    const zip = new JSZip();
+    let missingPhotos = []; // To store names with missing photos
+    let filesAdded = false; // To check if at least one file has been uploaded
+
+    for (const group of photoGroups) {
+      const name = group.querySelector('label').textContent.trim();
+      const inputs = group.querySelectorAll('input[type="file"]');
+      let fileIndex = 1;
+      let filesSelected = false;
+
+      for (const input of inputs) {
+        const file = input.files[0];
+        if (file) {
+          filesSelected = true;
+          filesAdded = true; // At least one file has been uploaded
+          let fileData;
+          if (Capacitor.isNative) {
+            fileData = await Filesystem.readFile({
+              path: file.path,
+              directory: Directory.Data,
+            });
+          } else {
+            fileData = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsArrayBuffer(file);
+            });
+          }
+          const extension = file.name.split('.').pop();
+          let fileName = `${name}.${extension}`;
+
+          if (fileIndex > 1) {
+            fileName = `${name}_${fileIndex}.${extension}`;
+          }
+
+          zip.file(fileName, fileData);
+          fileIndex++;
+        }
+      }
+
+      if (!filesSelected) {
+        // If no files are selected for this photo name, add it to the missingPhotos array
+        missingPhotos.push(name);
+      }
+    }
+
+    if (missingPhotos.length > 0) {
+      // Display a warning message about the missing photos
+      const confirmProceed = confirm(`Warning: No files were uploaded for the following names:\n\n${missingPhotos.join('\n')}\n\nProceed anyway or go back to fix?`);
       if (!confirmProceed) {
         return; // Go back to fix missing photos
       }
@@ -209,25 +260,14 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('All pictures renamed successfully!');
     }
 
-    const files = Object.values(uploadedFiles);
-    if (files.length > 0) {
-      fetch('/rename', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ files }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          downloadZipButton.style.display = 'none'; // Hide after download
-          window.location.href = '/download';
-        } else {
-          alert('Error renaming files: ' + data.error);
-        }
-      })
-      .catch(error => alert('Download failed: ' + error.message));
+    if (filesAdded) {
+      // Only generate the ZIP file if at least one file has been uploaded
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        saveAs(content, 'renamed-photos.zip');
+      });
     } else {
-      alert('No files uploaded to rename.');
+      // If no files were uploaded at all, display an error
+      alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
     }
   });
 
@@ -246,15 +286,15 @@ document.addEventListener('DOMContentLoaded', () => {
     option.addEventListener('change', (e) => {
       const destination = e.target.value;
       if (destination === 'local') {
-        downloadZipButton.style.display = 'block';
+        processButton.style.display = 'block';
         document.getElementById('uploadToDrive').style.display = 'none';
         document.getElementById('uploadToFtp').style.display = 'none';
       } else if (destination === 'google') {
-        downloadZipButton.style.display = 'none';
+        processButton.style.display = 'none';
         document.getElementById('uploadToDrive').style.display = 'block';
         document.getElementById('uploadToFtp').style.display = 'none';
       } else if (destination === 'ftp') {
-        downloadZipButton.style.display = 'none';
+        processButton.style.display = 'none';
         document.getElementById('uploadToDrive').style.display = 'none';
         document.getElementById('uploadToFtp').style.display = 'block';
       }
