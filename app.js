@@ -1,10 +1,15 @@
+// Listen for DOM content loaded to ensure textarea starts empty
+document.addEventListener('DOMContentLoaded', () => {
+  const textarea = document.getElementById('photo-names');
+  textarea.value = ''; // Explicitly clear any default value
+});
+
 // Listen for submission of the photo names form
 document.getElementById('photo-names-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const names = document
-    .getElementById('photo-names')
-    .value.split('\n')
-    .filter(Boolean);
+  const textarea = document.getElementById('photo-names');
+  textarea.value = textarea.value.trim(); // Remove leading/trailing whitespace
+  const names = textarea.value.split('\n').filter(Boolean);
   generatePhotoUploadForm(names);
 });
 
