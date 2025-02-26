@@ -15,6 +15,7 @@ function generatePhotoUploadForm(names) {
   names.forEach((name) => {
     const div = document.createElement('div');
     div.classList.add('photo-group');
+    div.setAttribute('data-name', name.trim()); // Add data-name for highlighting later
     div.innerHTML = `
       <label>${name}</label>
       <div class="file-inputs">
@@ -79,6 +80,10 @@ document.getElementById('process-button').addEventListener('click', async () => 
   let missingPhotos = []; // To store names with missing photos
   let filesAdded = false; // To check if at least one file has been uploaded
 
+  // Reset any previous "missing" highlights
+  photoGroups.forEach(group => group.classList.remove('missing'));
+
+  // Check for missing photos and prepare ZIP
   for (const group of photoGroups) {
     const name = group.querySelector('label').textContent.trim();
     const inputs = group.querySelectorAll('input[type="file"]');
@@ -104,23 +109,55 @@ document.getElementById('process-button').addEventListener('click', async () => 
     }
 
     if (!filesSelected) {
-      // If no files are selected for this photo name, add it to the missingPhotos array
       missingPhotos.push(name);
     }
   }
 
+  // If there are missing photos, show popup instead of alert
   if (missingPhotos.length > 0) {
-    // Display a warning message about the missing photos
-    alert(`Warning: No files were uploaded for the following names:\n\n${missingPhotos.join('\n')}`);
-  }
+    const popup = document.createElement('div');
+    popup.classList.add('popup');
+    popup.innerHTML = `
+      <div class="popup-content">
+        <p>Warning: No files were uploaded for the following names:</p>
+        <ul>${missingPhotos.map(name => `<li>${name}</li>`).join('')}</ul>
+        <button id="add-missing-btn">Add Missing Photos</button>
+        <button id="download-anyway-btn">Download Anyway</button>
+      </div>
+    `;
+    document.body.appendChild(popup);
 
-  if (filesAdded) {
-    // Only generate the ZIP file if at least one file has been uploaded
-    zip.generateAsync({ type: 'blob' }).then((content) => {
-      saveAs(content, 'renamed-photos.zip');
+    // Handle "Add Missing Photos" button
+    document.getElementById('add-missing-btn').addEventListener('click', () => {
+      document.body.removeChild(popup);
+      // Highlight missing photo groups in red
+      photoGroups.forEach(group => {
+        const name = group.getAttribute('data-name');
+        if (missingPhotos.includes(name)) {
+          group.classList.add('missing');
+        }
+      });
+    });
+
+    // Handle "Download Anyway" button
+    document.getElementById('download-anyway-btn').addEventListener('click', async () => {
+      document.body.removeChild(popup);
+      if (filesAdded) {
+        zip.generateAsync({ type: 'blob' }).then((content) => {
+          saveAs(content, 'renamed-photos.zip');
+        });
+      } else {
+        alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+      }
     });
   } else {
-    // If no files were uploaded at all, display an error
-    alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+    // No missing photos, proceed directly to download
+    if (filesAdded) {
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        saveAs(content, 'renamed-photos.zip');
+      });
+    } else {
+      alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+    }
   }
 });
