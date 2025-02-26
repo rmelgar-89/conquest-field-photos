@@ -15,11 +15,6 @@ body {
   padding: 20px;
 }
 
-/* Pages */
-.page {
-  display: block;
-}
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -44,58 +39,11 @@ header h1 {
   margin-bottom: 10px;
 }
 
-/* File Input Styling for Upload Items */
-.upload-item {
-  margin: 10px 0;
-  padding: 10px;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.upload-item span {
+/* Photo Names Section */
+#photo-names-section, #photo-upload-section {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
 }
 
-.upload-item input[type="file"] {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.upload-item input[type="file"]:disabled {
-  background-color: #f0f0f0;
-  cursor: not-allowed;
-}
-
-/* Buttons */
-button {
-  padding: 10px 20px;
-  background-color: #1E90FF;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 5px;
-  transition: background-color 0.3s;
-}
-
-button:hover, button:active {
-  background-color: #4169E1;
-}
-
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* Checklist for Required Photos */
 .checklist {
   margin-top: 20px;
   background-color: #fff;
@@ -109,9 +57,9 @@ button:disabled {
   margin-bottom: 10px;
 }
 
-#photoList {
+#photo-names {
   width: 100%;
-  height: 200px; /* Increased height for better visibility */
+  height: 200px;
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #ccc;
@@ -120,9 +68,102 @@ button:disabled {
   resize: vertical;
 }
 
+#photo-names-form button {
+  padding: 10px 20px;
+  background-color: #1E90FF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+#photo-names-form button:hover, #photo-names-form button:active {
+  background-color: #4169E1;
+}
+
+/* Photo Upload Section */
+.photo-group {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.photo-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.file-inputs {
+  margin-bottom: 10px;
+}
+
+.file-input {
+  margin: 5px 0;
+}
+
+.file-input input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.file-input img {
+  margin-top: 5px;
+  max-width: 100px;
+  display: block;
+}
+
+.add-photo-btn {
+  padding: 8px 16px;
+  background-color: #1E90FF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: background-color 0.3s;
+}
+
+.add-photo-btn:hover, .add-photo-btn:active {
+  background-color: #4169E1;
+}
+
+#process-button {
+  padding: 10px 20px;
+  background-color: #1E90FF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+#process-button:hover, #process-button:active {
+  background-color: #4169E1;
+}
+
+/* Checklist for Required Photos */
 #photoChecklist {
   list-style-type: none;
   padding: 0;
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 #photoChecklist li {
@@ -158,26 +199,26 @@ button:disabled {
     font-size: 1.5rem;
   }
 
-  .upload-item {
-    padding: 8px;
+  #photo-names {
+    height: 150px;
+    font-size: 0.9rem;
   }
 
-  .upload-item input[type="file"] {
+  .photo-group {
+    padding: 10px;
+  }
+
+  .file-input input[type="file"] {
     font-size: 0.8rem;
   }
 
-  button {
+  .add-photo-btn, #process-button, #photo-names-form button {
     width: 100%;
     margin: 5px 0;
     padding: 12px;
   }
 
-  #photoList {
-    height: 150px; /* Adjusted for mobile */
-    font-size: 0.9rem;
-  }
-
-  .checklist {
+  #photoChecklist {
     padding: 10px;
   }
 
@@ -192,6 +233,6 @@ button:disabled {
 }
 
 /* Ensure touch-friendly elements */
-button, .upload-item input[type="file"] {
+button, .file-input input[type="file"], .add-photo-btn {
   touch-action: manipulation;
 }
