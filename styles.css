@@ -15,7 +15,6 @@ body {
   padding: 20px;
 }
 
-/* Container for the App */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -40,43 +39,36 @@ header h1 {
   margin-bottom: 10px;
 }
 
-/* File Input Styling */
-#fileInput {
+/* Photo Names Section */
+#photo-names-section, #photo-upload-section {
   display: block;
+}
+
+.checklist {
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.checklist h3 {
+  color: #1E90FF;
+  margin-bottom: 10px;
+}
+
+#photo-names {
   width: 100%;
+  height: 200px;
   padding: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 1rem;
-  cursor: pointer;
+  resize: vertical;
 }
 
-/* Image Previews */
-.image-preview {
-  display: inline-block;
-  margin: 10px;
-  max-width: 200px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.image-preview img {
-  width: 100%;
-  height: auto;
-}
-
-.image-preview span {
-  display: block;
-  padding: 5px;
-  background-color: #f0f0f0;
-  text-align: center;
-  font-size: 0.9rem;
-}
-
-/* Buttons */
-button {
+#photo-names-form button {
   padding: 10px 20px;
   background-color: #1E90FF;
   color: white;
@@ -85,10 +77,116 @@ button {
   cursor: pointer;
   margin: 5px;
   transition: background-color 0.3s;
+  width: 100%;
 }
 
-button:hover, button:active {
+#photo-names-form button:hover, #photo-names-form button:active {
   background-color: #4169E1;
+}
+
+/* Photo Upload Section */
+.photo-group {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.photo-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.file-inputs {
+  margin-bottom: 10px;
+}
+
+.file-input {
+  margin: 5px 0;
+}
+
+.file-input input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.file-input img {
+  margin-top: 5px;
+  max-width: 100px;
+  display: block;
+}
+
+.add-photo-btn {
+  padding: 8px 16px;
+  background-color: #1E90FF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: background-color 0.3s;
+}
+
+.add-photo-btn:hover, .add-photo-btn:active {
+  background-color: #4169E1;
+}
+
+#process-button {
+  padding: 10px 20px;
+  background-color: #1E90FF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+#process-button:hover, #process-button:active {
+  background-color: #4169E1;
+}
+
+/* Checklist for Required Photos */
+#photoChecklist {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 20px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+#photoChecklist li {
+  padding: 5px;
+  font-size: 0.9rem;
+}
+
+#photoChecklist li:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+#photoChecklist li.missing {
+  color: #ff4444; /* Highlight missing photos in red */
+}
+
+/* Upload Options */
+.upload-options {
+  margin: 10px 0;
+}
+
+.upload-options label {
+  margin-right: 15px;
+  font-size: 1rem;
 }
 
 /* Responsive Design for Mobile */
@@ -101,24 +199,40 @@ button:hover, button:active {
     font-size: 1.5rem;
   }
 
-  #fileInput {
+  #photo-names {
+    height: 150px;
     font-size: 0.9rem;
   }
 
-  .image-preview {
-    width: 100%;
-    margin: 10px 0;
-    max-width: none;
+  .photo-group {
+    padding: 10px;
   }
 
-  button {
+  .file-input input[type="file"] {
+    font-size: 0.8rem;
+  }
+
+  .add-photo-btn, #process-button, #photo-names-form button {
     width: 100%;
     margin: 5px 0;
     padding: 12px;
   }
+
+  #photoChecklist {
+    padding: 10px;
+  }
+
+  #photoChecklist li {
+    font-size: 0.8rem;
+  }
+
+  .upload-options label {
+    display: block;
+    margin: 5px 0;
+  }
 }
 
 /* Ensure touch-friendly elements */
-button, #fileInput {
+button, .file-input input[type="file"], .add-photo-btn {
   touch-action: manipulation;
 }
