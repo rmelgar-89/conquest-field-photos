@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const exifParser = require('exif-parser');
 const archiver = require('archiver');
 const fs = require('fs');
 const path = require('path');
@@ -26,15 +25,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     return res.status(400).json({ success: false, error: 'No file uploaded' });
   }
 
-  try {
-    const parser = exifParser.create(fs.readBufferSync(req.file.path));
-    const exifData = parser.parse();
-    const dateTaken = exifData.tags && exifData.tags.DateTimeOriginal ? exifData.tags.DateTimeOriginal : new Date().toISOString().split('T')[0];
-
-    res.json({ success: true, filename: req.file.filename });
-  } catch (error) {
-    res.json({ success: true, filename: req.file.filename }); // Fallback if no EXIF data
-  }
+  res.json({ success: true, filename: req.file.filename });
 });
 
 app.post('/rename', (req, res) => {
@@ -53,9 +44,9 @@ app.post('/rename', (req, res) => {
 
   archive.pipe(output);
 
-  files.forEach((file, index) => {
+  files.forEach(file => {
     const oldPath = path.join('uploads', file);
-    const newName = `photo_${index + 1}.jpg`; // Default naming (reverts to original behavior)
+    const newName = file; // Use the exact name provided by the user
     const newPath = path.join('uploads', newName);
 
     fs.renameSync(oldPath, newPath);
