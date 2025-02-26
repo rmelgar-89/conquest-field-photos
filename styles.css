@@ -5,7 +5,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Roboto', sans-serif; /* Clean, readable font for mobile */
+  font-family: 'Roboto', sans-serif;
 }
 
 body {
@@ -29,7 +29,7 @@ header {
 }
 
 header h1 {
-  color: #1E90FF; /* Conquest Blue */
+  color: #1E90FF;
   font-size: 2rem;
 }
 
@@ -53,7 +53,7 @@ header h1 {
 }
 
 .drop-zone:hover, .drop-zone:active {
-  border-color: #1E90FF; /* Blue for branding on hover/touch */
+  border-color: #1E90FF;
   background-color: #f0f8ff;
 }
 
@@ -93,7 +93,7 @@ header h1 {
 /* Buttons */
 button {
   padding: 10px 20px;
-  background-color: #1E90FF; /* Conquest Blue */
+  background-color: #1E90FF;
   color: white;
   border: none;
   border-radius: 5px;
@@ -103,7 +103,7 @@ button {
 }
 
 button:hover, button:active {
-  background-color: #4169E1; /* Darker blue for hover/touch */
+  background-color: #4169E1;
 }
 
 /* Form Inputs */
@@ -145,7 +145,17 @@ input[type="text"], textarea {
 }
 
 #photoChecklist li.missing {
-  color: #ff4444;
+  color: #ff4444; /* Highlight missing photos in red */
+}
+
+/* Upload Options */
+.upload-options {
+  margin: 10px 0;
+}
+
+.upload-options label {
+  margin-right: 15px;
+  font-size: 1rem;
 }
 
 /* Responsive Design for Mobile */
@@ -187,9 +197,14 @@ input[type="text"], textarea {
   #photoChecklist li {
     font-size: 0.8rem;
   }
+
+  .upload-options label {
+    display: block;
+    margin: 5px 0;
+  }
 }
 
 /* Ensure touch-friendly elements */
 button, .drop-zone {
-  touch-action: manipulation; /* Improves touch responsiveness */
+  touch-action: manipulation;
 }
