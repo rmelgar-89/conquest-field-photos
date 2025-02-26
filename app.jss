@@ -1,126 +1,329 @@
-// Listen for submission of the photo names form
-document.getElementById('photo-names-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const names = document
-    .getElementById('photo-names')
-    .value.split('\n')
-    .filter(Boolean);
-  generatePhotoUploadForm(names);
-});
+// Conquest Field Photos - Frontend Logic for Photo Renaming Tool (Capacitor Wrapper)
 
-// Generate the photo upload form based on the provided photo names
-function generatePhotoUploadForm(names) {
-  const form = document.getElementById('photo-upload-form');
-  form.innerHTML = ''; // Clear existing content
-  names.forEach((name) => {
-    const div = document.createElement('div');
-    div.classList.add('photo-group');
-    div.innerHTML = `
-      <label>${name}</label>
-      <div class="file-inputs">
-        <div class="file-input">
-          <input type="file" accept="image/*" data-name="${name.trim()}" />
-        </div>
-      </div>
-      <button type="button" class="add-photo-btn" data-name="${name.trim()}">Add Photo</button>
-    `;
-    form.appendChild(div);
+// Import Capacitor plugins
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Network } from '@capacitor/network';
+import { Storage } from '@capacitor/storage';
+
+// PWA Service Worker Registration (for web fallback)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => console.log('Service Worker registered'))
+      .catch(err => console.log('Service Worker registration failed:', err));
   });
-  document.getElementById('photo-names-section').style.display = 'none';
-  document.getElementById('photo-upload-section').style.display = 'block';
 }
 
-// Handle adding additional photo inputs for each name
-document.getElementById('photo-upload-form').addEventListener('click', (event) => {
-  if (event.target && event.target.classList.contains('add-photo-btn')) {
-    const name = event.target.getAttribute('data-name');
-    const photoGroup = event.target.parentNode;
-    const fileInputsDiv = photoGroup.querySelector('.file-inputs');
+// Offline Upload Queue (using local storage for persistence)
+let uploadQueue = [];
 
-    const newFileInputDiv = document.createElement('div');
-    newFileInputDiv.classList.add('file-input');
-    newFileInputDiv.innerHTML = `
-      <input type="file" accept="image/*" data-name="${name.trim()}" />
-    `;
-    fileInputsDiv.appendChild(newFileInputDiv);
+async function loadQueue() {
+  const { value } = await Storage.get({ key: 'uploadQueue' });
+  uploadQueue = value ? JSON.parse(value) : [];
+  if (Capacitor.isNative && navigator.onLine) {
+    processQueue();
   }
-});
+}
 
-// Handle image previews when a file is selected
-document.getElementById('photo-upload-form').addEventListener('change', (event) => {
-  if (event.target && event.target.matches('input[type="file"]')) {
-    handleFileSelect(event);
+async function saveQueue() {
+  await Storage.set({ key: 'uploadQueue', value: JSON.stringify(uploadQueue) });
+}
+
+function queueUpload(file, destination) {
+  uploadQueue.push({ file, destination });
+  saveQueue();
+  if (Capacitor.isNative && navigator.onLine) {
+    processQueue();
   }
-});
+}
 
-function handleFileSelect(event) {
-  const file = event.target.files[0];
-
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      let img = event.target.parentNode.querySelector('img');
-      if (!img) {
-        img = document.createElement('img');
-        img.style.maxWidth = '100px';
-        img.style.display = 'block';
-        event.target.parentNode.appendChild(img);
+async function processQueue() {
+  const networkStatus = await Network.getStatus();
+  if (networkStatus.connected) {
+    while (uploadQueue.length > 0) {
+      const { file, destination } = uploadQueue.shift();
+      if (destination === 'google') {
+        await uploadToDrive(file);
+      } else if (destination === 'ftp') {
+        await uploadToFtp(file);
       }
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    }
+    await saveQueue();
   }
 }
 
-// Handle processing of the uploaded photos
-document.getElementById('process-button').addEventListener('click', async () => {
-  const photoGroups = document.querySelectorAll('.photo-group');
-  const zip = new JSZip();
-  let missingPhotos = []; // To store names with missing photos
-  let filesAdded = false; // To check if at least one file has been uploaded
+Network.addListener('networkStatusChange', status => {
+  if (status.connected) {
+    processQueue();
+  }
+});
 
-  for (const group of photoGroups) {
-    const name = group.querySelector('label').textContent.trim();
-    const inputs = group.querySelectorAll('input[type="file"]');
-    let fileIndex = 1;
-    let filesSelected = false;
+// Load queue on app start
+loadQueue();
 
-    for (const input of inputs) {
-      const file = input.files[0];
-      if (file) {
-        filesSelected = true;
-        filesAdded = true; // At least one file has been uploaded
-        const data = await file.arrayBuffer();
-        const extension = file.name.split('.').pop();
-        let fileName = `${name}.${extension}`;
+// Drag-and-Drop and File Upload Handling (Native File Picker for Capacitor)
+const dropZone = document.querySelector('.drop-zone');
+const imagePreviews = document.getElementById('imagePreviews');
+const customNameInput = document.getElementById('customName');
+const renameButton = document.getElementById('renameButton');
+const downloadZipButton = document.getElementById('downloadZip');
+const photoListInput = document.getElementById('photoList');
+const photoChecklist = document.getElementById('photoChecklist');
+const uploadOptions = document.querySelectorAll('input[name="uploadDestination"]');
 
-        if (fileIndex > 1) {
-          fileName = `${name}_${fileIndex}.${extension}`;
+// Use Capacitor File Picker for native file access
+async function pickFiles() {
+  try {
+    const result = await Filesystem.pickFiles({
+      multiple: true,
+      types: ['image/*'],
+    });
+    handleFiles(result.files);
+  } catch (error) {
+    alert('Error picking files: ' + error.message);
+  }
+}
+
+dropZone.addEventListener('click', () => {
+  if (Capacitor.isNative) {
+    pickFiles();
+  } else {
+    document.getElementById('fileInput').click();
+  }
+});
+
+// Web fallback for drag-and-drop
+if (!Capacitor.isNative) {
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+}
+
+async function handleFiles(files) {
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      let fileData;
+      if (Capacitor.isNative) {
+        // Read native file
+        fileData = await Filesystem.readFile({
+          path: file.path,
+          directory: Directory.Data,
+        });
+      } else {
+        // Web file handling
+        fileData = file;
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileData, file.name);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.success) {
+          displayImage(data.filename, file.name);
+          updateChecklist();
+        } else {
+          alert('Error uploading file: ' + data.error);
         }
-
-        zip.file(fileName, data);
-        fileIndex++;
+      } catch (error) {
+        alert('Upload failed: ' + error.message);
       }
+    } else {
+      alert('Only image files are allowed.');
     }
+  }
+}
 
-    if (!filesSelected) {
-      // If no files are selected for this photo name, add it to the missingPhotos array
-      missingPhotos.push(name);
+function displayImage(filename, name) {
+  const preview = document.createElement('div');
+  preview.className = 'image-preview';
+  preview.dataset.filename = filename;
+
+  const img = document.createElement('img');
+  img.src = Capacitor.isNative ? `data:image/jpeg;base64,${filename}` : `/uploads/${filename}`;
+  img.alt = name;
+
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = name;
+
+  preview.appendChild(img);
+  preview.appendChild(nameSpan);
+  imagePreviews.appendChild(preview);
+}
+
+// Photo Checklist with Interactive Popup
+function updateChecklist() {
+  const list = photoListInput.value.split('\n').map(line => line.trim()).filter(line => line);
+  const uploadedFiles = Array.from(document.querySelectorAll('.image-preview')).map(img => img.dataset.filename);
+  photoChecklist.innerHTML = '';
+
+  let hasMissing = false;
+
+  list.forEach(photo => {
+    const li = document.createElement('li');
+    li.textContent = photo;
+    if (!uploadedFiles.includes(photo)) {
+      li.classList.add('missing');
+      li.textContent += ' (Missing)';
+      hasMissing = true;
+    }
+    photoChecklist.appendChild(li);
+  });
+
+  // Store missing photos for popup
+  window.missingPhotos = hasMissing ? list.filter(photo => !uploadedFiles.includes(photo)) : [];
+}
+
+photoListInput.addEventListener('input', updateChecklist);
+
+// Check for missing photos before renaming
+renameButton.addEventListener('click', () => {
+  if (window.missingPhotos && window.missingPhotos.length > 0) {
+    const confirmProceed = confirm(`The following photos are missing: ${window.missingPhotos.join(', ')}\nProceed anyway or go back to fix?`);
+    if (!confirmProceed) {
+      return; // Go back to fix missing photos
     }
   }
 
-  if (missingPhotos.length > 0) {
-    // Display a warning message about the missing photos
-    alert(`Warning: No files were uploaded for the following names:\n\n${missingPhotos.join('\n')}`);
-  }
+  const customName = customNameInput.value || 'photo';
+  const files = Array.from(document.querySelectorAll('.image-preview')).map(preview => preview.dataset.filename);
 
-  if (filesAdded) {
-    // Only generate the ZIP file if at least one file has been uploaded
-    zip.generateAsync({ type: 'blob' }).then((content) => {
-      saveAs(content, 'renamed-photos.zip');
+  fetch('/rename', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ files, customName }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Files renamed successfully!');
+      downloadZipButton.style.display = 'block';
+    } else {
+      alert('Error renaming files: ' + data.error);
+    }
+  })
+  .catch(error => alert('Rename failed: ' + error.message));
+});
+
+downloadZipButton.addEventListener('click', () => {
+  window.location.href = '/download';
+});
+
+// Google Drive Upload (Placeholder, not implemented yet)
+document.getElementById('uploadToDrive').addEventListener('click', () => {
+  const file = document.querySelector('input[type="file"]').files[0];
+  if (file) {
+    queueUpload(file, 'google');
+  } else {
+    alert('Please select a file first.');
+  }
+});
+
+async function uploadToDrive(file) {
+  let fileData;
+  if (Capacitor.isNative) {
+    fileData = await Filesystem.readFile({
+      path: file.path,
+      directory: Directory.Data,
     });
   } else {
-    // If no files were uploaded at all, display an error
-    alert('No files were uploaded. Please upload at least one file to generate the ZIP.');
+    fileData = file;
   }
+
+  const formData = new FormData();
+  formData.append('file', fileData, file.name);
+
+  try {
+    const response = await fetch('/upload-to-drive', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.success) {
+      alert('File uploaded to Google Drive successfully!');
+    } else {
+      alert('Error uploading to Google Drive: ' + data.error);
+    }
+  } catch (error) {
+    alert('Upload failed: ' + error.message);
+  }
+}
+
+// FTP Upload (Placeholder, not implemented yet)
+document.getElementById('uploadToFtp').addEventListener('click', () => {
+  const file = document.querySelector('input[type="file"]').files[0];
+  if (file) {
+    queueUpload(file, 'ftp');
+  } else {
+    alert('Please select a file first.');
+  }
+});
+
+async function uploadToFtp(file) {
+  let fileData;
+  if (Capacitor.isNative) {
+    fileData = await Filesystem.readFile({
+      path: file.path,
+      directory: Directory.Data,
+    });
+  } else {
+    fileData = file;
+  }
+
+  const formData = new FormData();
+  formData.append('file', fileData, file.name);
+
+  try {
+    const response = await fetch('/upload-to-ftp', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await response.json();
+    if (data.success) {
+      alert('File uploaded to FTP successfully!');
+    } else {
+      alert('Error uploading to FTP: ' + data.error);
+    }
+  } catch (error) {
+    alert('Upload failed: ' + error.message);
+  }
+}
+
+// Handle Upload Destination Selection
+uploadOptions.forEach(option => {
+  option.addEventListener('change', (e) => {
+    const destination = e.target.value;
+    if (destination === 'local') {
+      renameButton.style.display = 'block';
+      downloadZipButton.style.display = 'none';
+      document.getElementById('uploadToDrive').style.display = 'none';
+      document.getElementById('uploadToFtp').style.display = 'none';
+    } else if (destination === 'google') {
+      renameButton.style.display = 'none';
+      downloadZipButton.style.display = 'none';
+      document.getElementById('uploadToDrive').style.display = 'block';
+      document.getElementById('uploadToFtp').style.display = 'none';
+    } else if (destination === 'ftp') {
+      renameButton.style.display = 'none';
+      downloadZipButton.style.display = 'none';
+      document.getElementById('uploadToDrive').style.display = 'none';
+      document.getElementById('uploadToFtp').style.display = 'block';
+    }
+  });
 });
