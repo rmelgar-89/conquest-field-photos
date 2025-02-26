@@ -15,7 +15,11 @@ body {
   padding: 20px;
 }
 
-/* Container for the App */
+/* Pages */
+.page {
+  display: block;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -40,39 +44,34 @@ header h1 {
   margin-bottom: 10px;
 }
 
-/* File Input Styling */
-#fileInput {
-  display: block;
-  width: 100%;
+/* File Input Styling for Upload Items */
+.upload-item {
+  margin: 10px 0;
   padding: 10px;
-  margin-bottom: 20px;
+  background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 5px;
-  font-size: 1rem;
+}
+
+.upload-item span {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.upload-item input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
-/* Image Previews */
-.image-preview {
-  display: inline-block;
-  margin: 10px;
-  max-width: 200px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.image-preview img {
-  width: 100%;
-  height: auto;
-}
-
-.image-preview span {
-  display: block;
-  padding: 5px;
+.upload-item input[type="file"]:disabled {
   background-color: #f0f0f0;
-  text-align: center;
-  font-size: 0.9rem;
+  cursor: not-allowed;
 }
 
 /* Buttons */
@@ -108,6 +107,16 @@ button:disabled {
 .checklist h3 {
   color: #1E90FF;
   margin-bottom: 10px;
+}
+
+#photoList {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  resize: vertical;
 }
 
 #photoChecklist {
@@ -148,20 +157,22 @@ button:disabled {
     font-size: 1.5rem;
   }
 
-  #fileInput {
-    font-size: 0.9rem;
+  .upload-item {
+    padding: 8px;
   }
 
-  .image-preview {
-    width: 100%;
-    margin: 10px 0;
-    max-width: none;
+  .upload-item input[type="file"] {
+    font-size: 0.8rem;
   }
 
   button {
     width: 100%;
     margin: 5px 0;
     padding: 12px;
+  }
+
+  #photoList {
+    font-size: 0.9rem;
   }
 
   .checklist {
@@ -179,6 +190,6 @@ button:disabled {
 }
 
 /* Ensure touch-friendly elements */
-button, #fileInput {
+button, .upload-item input[type="file"] {
   touch-action: manipulation;
 }
