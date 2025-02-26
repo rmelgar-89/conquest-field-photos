@@ -11,28 +11,40 @@
   <link rel="apple-touch-icon" href="/icon-192x192.png">
 </head>
 <body>
-  <header>
-    <div class="logo">Conquest Field Photos</div>
-    <h1>Photo Renaming Tool</h1>
-  </header>
-  <div class="container">
-    <input type="file" id="fileInput" multiple>
-    <div id="imagePreviews"></div>
-    <button id="renameButton">Rename Files</button>
-    <button id="downloadZip" style="display: none;">Download ZIP</button>
-    <div class="checklist">
-      <h3>Required Photos</h3>
-      <textarea id="photoList" placeholder="Paste photo names here (e.g., MS_BR026_1_MDF_Room_Door)"></textarea>
+  <div id="page1" class="page">
+    <header>
+      <div class="logo">Conquest Field Photos</div>
+      <h1>Photo Renaming Tool</h1>
+    </header>
+    <div class="container">
+      <div class="checklist">
+        <h3>Required Photos</h3>
+        <textarea id="photoList" placeholder="Paste photo names here (e.g., MS_BR026_1_MDF_Room_Door), one per line"></textarea>
+        <button id="processButton">Process</button>
+      </div>
+      <div class="upload-options">
+        <label><input type="radio" name="uploadDestination" value="local" checked> Download as ZIP</label>
+        <label><input type="radio" name="uploadDestination" value="google"> Upload to Google Drive (Coming Soon)</label>
+        <label><input type="radio" name="uploadDestination" value="ftp"> Upload to FTP (Coming Soon)</label>
+      </div>
+      <button id="uploadToDrive" style="display: none;" disabled>Upload to Google Drive (Coming Soon)</button>
+      <button id="uploadToFtp" style="display: none;" disabled>Upload to FTP (Coming Soon)</button>
+    </div>
+  </div>
+
+  <div id="page2" class="page" style="display: none;">
+    <header>
+      <div class="logo">Conquest Field Photos</div>
+      <h1>Upload Photos</h1>
+    </header>
+    <div class="container">
+      <div id="photoUploads"></div>
+      <button id="addAdditionalPhoto">Add Additional Photo</button>
+      <button id="downloadZip" style="display: none;">Download as ZIP</button>
       <ul id="photoChecklist"></ul>
     </div>
-    <div class="upload-options">
-      <label><input type="radio" name="uploadDestination" value="local" checked> Download as ZIP</label>
-      <label><input type="radio" name="uploadDestination" value="google"> Upload to Google Drive (Coming Soon)</label>
-      <label><input type="radio" name="uploadDestination" value="ftp"> Upload to FTP (Coming Soon)</label>
-    </div>
-    <button id="uploadToDrive" style="display: none;" disabled>Upload to Google Drive (Coming Soon)</button>
-    <button id="uploadToFtp" style="display: none;" disabled>Upload to FTP (Coming Soon)</button>
   </div>
+
   <script type="module" src="/capacitor.js"></script>
   <script nomodule src="/capacitor.js"></script>
   <script type="module" src="app.jss"></script>
