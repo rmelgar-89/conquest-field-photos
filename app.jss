@@ -65,7 +65,6 @@ loadQueue();
 // File Upload Handling (Using File Input Only)
 const fileInput = document.getElementById('fileInput');
 const imagePreviews = document.getElementById('imagePreviews');
-const customNameInput = document.getElementById('customName');
 const renameButton = document.getElementById('renameButton');
 const downloadZipButton = document.getElementById('downloadZip');
 const photoListInput = document.getElementById('photoList');
@@ -166,13 +165,12 @@ renameButton.addEventListener('click', () => {
     }
   }
 
-  const customName = customNameInput.value || 'photo';
   const files = Array.from(document.querySelectorAll('.image-preview')).map(preview => preview.dataset.filename);
 
   fetch('/rename', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ files, customName }),
+    body: JSON.stringify({ files }),
   })
   .then(response => response.json())
   .then(data => {
