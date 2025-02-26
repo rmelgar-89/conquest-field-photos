@@ -96,16 +96,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Form Inputs */
-input[type="text"], textarea {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
 /* Checklist for Required Photos */
 .checklist {
   margin-top: 20px;
@@ -172,10 +162,6 @@ input[type="text"], textarea {
     width: 100%;
     margin: 5px 0;
     padding: 12px;
-  }
-
-  input[type="text"], textarea {
-    font-size: 0.9rem;
   }
 
   .checklist {
