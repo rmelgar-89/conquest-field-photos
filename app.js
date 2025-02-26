@@ -1,6 +1,5 @@
 const express = require('express');
 const multer = require('multer');
-const archiver = require('archiver');
 const fs = require('fs');
 const path = require('path');
 
@@ -26,49 +25,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
   }
 
   res.json({ success: true, filename: req.file.filename });
-});
-
-app.post('/rename', (req, res) => {
-  const { files } = req.body;
-  const output = fs.createWriteStream('output.zip');
-  const archive = archiver('zip');
-
-  output.on('close', () => {
-    console.log(`${archive.pointer()} total bytes`);
-    res.json({ success: true });
-  });
-
-  archive.on('error', (err) => {
-    res.status(500).json({ success: false, error: err.message });
-  });
-
-  archive.pipe(output);
-
-  files.forEach(file => {
-    const oldPath = path.join('uploads', file);
-    const newName = file; // Use the exact name provided by the user
-    const newPath = path.join('uploads', newName);
-
-    fs.renameSync(oldPath, newPath);
-    archive.file(newPath, { name: newName });
-  });
-
-  archive.finalize();
-
-  // Clean up files after ZIP creation
-  res.on('finish', () => {
-    fs.readdirSync('uploads/').forEach(file => fs.unlinkSync(path.join('uploads/', file)));
-    fs.unlinkSync('output.zip');
-  });
-});
-
-app.get('/download', (req, res) => {
-  res.download('output.zip', 'renamed_photos.zip', (err) => {
-    if (err) {
-      res.status(500).send('Error downloading ZIP');
-    }
-    fs.unlinkSync('output.zip'); // Clean up ZIP after download
-  });
 });
 
 app.listen(port, () => {
