@@ -15,7 +15,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Offline Upload Queue (using local storage for persistence)
+// Offline Upload Queue (using local storage for persistence, placeholder for future Google/FTP)
 let uploadQueue = [];
 
 async function loadQueue() {
@@ -44,9 +44,9 @@ async function processQueue() {
     while (uploadQueue.length > 0) {
       const { file, destination } = uploadQueue.shift();
       if (destination === 'google') {
-        await uploadToDrive(file);
+        alert('Upload to Google Drive is coming soon.');
       } else if (destination === 'ftp') {
-        await uploadToFtp(file);
+        alert('Upload to FTP is coming soon.');
       }
     }
     await saveQueue();
@@ -62,8 +62,8 @@ Network.addListener('networkStatusChange', status => {
 // Load queue on app start
 loadQueue();
 
-// Drag-and-Drop and File Upload Handling (Native File Picker for Capacitor)
-const dropZone = document.querySelector('.drop-zone');
+// File Upload Handling (Using File Input Only)
+const fileInput = document.getElementById('fileInput');
 const imagePreviews = document.getElementById('imagePreviews');
 const customNameInput = document.getElementById('customName');
 const renameButton = document.getElementById('renameButton');
@@ -72,44 +72,9 @@ const photoListInput = document.getElementById('photoList');
 const photoChecklist = document.getElementById('photoChecklist');
 const uploadOptions = document.querySelectorAll('input[name="uploadDestination"]');
 
-// Use Capacitor File Picker for native file access
-async function pickFiles() {
-  try {
-    const result = await Filesystem.pickFiles({
-      multiple: true,
-      types: ['image/*'],
-    });
-    handleFiles(result.files);
-  } catch (error) {
-    alert('Error picking files: ' + error.message);
-  }
-}
-
-dropZone.addEventListener('click', () => {
-  if (Capacitor.isNative) {
-    pickFiles();
-  } else {
-    document.getElementById('fileInput').click();
-  }
+fileInput.addEventListener('change', (e) => {
+  handleFiles(e.target.files);
 });
-
-// Web fallback for drag-and-drop
-if (!Capacitor.isNative) {
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.classList.add('dragover');
-  });
-
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.classList.remove('dragover');
-  });
-
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
-    handleFiles(e.dataTransfer.files);
-  });
-}
 
 async function handleFiles(files) {
   for (const file of files) {
@@ -225,85 +190,15 @@ downloadZipButton.addEventListener('click', () => {
   window.location.href = '/download';
 });
 
-// Google Drive Upload (Placeholder, not implemented yet)
+// Google Drive Upload (Disabled, Coming Soon)
 document.getElementById('uploadToDrive').addEventListener('click', () => {
-  const file = document.querySelector('input[type="file"]').files[0];
-  if (file) {
-    queueUpload(file, 'google');
-  } else {
-    alert('Please select a file first.');
-  }
+  alert('Upload to Google Drive is coming soon.');
 });
 
-async function uploadToDrive(file) {
-  let fileData;
-  if (Capacitor.isNative) {
-    fileData = await Filesystem.readFile({
-      path: file.path,
-      directory: Directory.Data,
-    });
-  } else {
-    fileData = file;
-  }
-
-  const formData = new FormData();
-  formData.append('file', fileData, file.name);
-
-  try {
-    const response = await fetch('/upload-to-drive', {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await response.json();
-    if (data.success) {
-      alert('File uploaded to Google Drive successfully!');
-    } else {
-      alert('Error uploading to Google Drive: ' + data.error);
-    }
-  } catch (error) {
-    alert('Upload failed: ' + error.message);
-  }
-}
-
-// FTP Upload (Placeholder, not implemented yet)
+// FTP Upload (Disabled, Coming Soon)
 document.getElementById('uploadToFtp').addEventListener('click', () => {
-  const file = document.querySelector('input[type="file"]').files[0];
-  if (file) {
-    queueUpload(file, 'ftp');
-  } else {
-    alert('Please select a file first.');
-  }
+  alert('Upload to FTP is coming soon.');
 });
-
-async function uploadToFtp(file) {
-  let fileData;
-  if (Capacitor.isNative) {
-    fileData = await Filesystem.readFile({
-      path: file.path,
-      directory: Directory.Data,
-    });
-  } else {
-    fileData = file;
-  }
-
-  const formData = new FormData();
-  formData.append('file', fileData, file.name);
-
-  try {
-    const response = await fetch('/upload-to-ftp', {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await response.json();
-    if (data.success) {
-      alert('File uploaded to FTP successfully!');
-    } else {
-      alert('Error uploading to FTP: ' + data.error);
-    }
-  } catch (error) {
-    alert('Upload failed: ' + error.message);
-  }
-}
 
 // Handle Upload Destination Selection
 uploadOptions.forEach(option => {
