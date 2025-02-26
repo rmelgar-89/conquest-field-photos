@@ -16,7 +16,6 @@
     <h1>Photo Renaming Tool</h1>
   </header>
   <div class="container">
-    <div class="drop-zone" id="dropZone">Drag and drop images here or click to select</div>
     <input type="file" id="fileInput" multiple>
     <div id="imagePreviews"></div>
     <input type="text" id="customName" placeholder="Custom name (e.g., MS_BR026_1_)">
@@ -29,11 +28,11 @@
     </div>
     <div class="upload-options">
       <label><input type="radio" name="uploadDestination" value="local" checked> Download as ZIP</label>
-      <label><input type="radio" name="uploadDestination" value="google"> Upload to Google Drive</label>
-      <label><input type="radio" name="uploadDestination" value="ftp"> Upload to FTP</label>
+      <label><input type="radio" name="uploadDestination" value="google"> Upload to Google Drive (Coming Soon)</label>
+      <label><input type="radio" name="uploadDestination" value="ftp"> Upload to FTP (Coming Soon)</label>
     </div>
-    <button id="uploadToDrive" style="display: none;">Upload to Google Drive</button>
-    <button id="uploadToFtp" style="display: none;">Upload to FTP</button>
+    <button id="uploadToDrive" style="display: none;" disabled>Upload to Google Drive (Coming Soon)</button>
+    <button id="uploadToFtp" style="display: none;" disabled>Upload to FTP (Coming Soon)</button>
   </div>
   <script type="module" src="/capacitor.js"></script>
   <script nomodule src="/capacitor.js"></script>
