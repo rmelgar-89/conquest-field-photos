@@ -1,49 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Conquest Field Photos</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icon-192x192.png">
+  <meta charset="UTF-8" />
+  <title>Picture Renamer</title>
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <div class="logo">Conquest Field Photos</div>
-    <h1>Photo Renaming Tool</h1>
-  </header>
   <div class="container">
+    <h1 class="text-center my-4">Picture Renamer</h1>
+
+    <!-- Photo Names Input Section -->
     <div id="photo-names-section">
-      <div class="checklist">
-        <h3>Required Photos</h3>
-        <form id="photo-names-form">
-          <textarea id="photo-names" placeholder="Paste photo names here (e.g., MS_BR026_1_MDF_Room_Door), one per line"></textarea>
-          <button type="submit">Process</button>
-        </form>
-      </div>
-      <div class="upload-options">
-        <label><input type="radio" name="uploadDestination" value="local" checked> Download as ZIP</label>
-        <label><input type="radio" name="uploadDestination" value="google"> Upload to Google Drive (Coming Soon)</label>
-        <label><input type="radio" name="uploadDestination" value="ftp"> Upload to FTP (Coming Soon)</label>
-      </div>
-      <button id="uploadToDrive" style="display: none;" disabled>Upload to Google Drive (Coming Soon)</button>
-      <button id="uploadToFtp" style="display: none;" disabled>Upload to FTP (Coming Soon)</button>
+      <h2>Enter Photo Names</h2>
+      <form id="photo-names-form">
+        <div class="mb-3">
+          <textarea
+            id="photo-names"
+            class="form-control"
+            placeholder="Enter photo names, one per line"
+            rows="10"
+          ></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Next</button>
+      </form>
     </div>
 
+    <!-- Photo Upload Section -->
     <div id="photo-upload-section" style="display: none;">
-      <div id="photo-upload-form"></div>
-      <button id="process-button">Download as ZIP</button>
-      <ul id="photoChecklist"></ul>
+      <h2>Upload Photos</h2>
+      <form id="photo-upload-form"></form>
+      <button id="process-button" class="btn btn-success w-100 mt-3">
+        Process
+      </button>
     </div>
   </div>
 
-  <script type="module" src="/capacitor.js"></script>
-  <script nomodule src="/capacitor.js"></script>
-  <script type="module" src="app.jss"></script>
+  <!-- Include JSZip and FileSaver.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- Include Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+  <!-- Include your JavaScript file -->
+  <script src="app.js"></script>
 </body>
 </html>
